@@ -74,34 +74,6 @@ body {
     transform: scale(0.98);
 }
 
-.run-button {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    background-color: var(--success);
-    color: white;
-    border: none;
-    padding: 0.4rem 1rem;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-}
-
-.run-button:hover {
-    background-color: #2c974b;
-}
-
-.run-button:active {
-    transform: scale(0.98);
-}
-
-.play-icon {
-    width: 14px;
-    height: 14px;
-}
-
 /* Workspace */
 .workspace {
     display: flex;

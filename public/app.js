@@ -419,59 +419,7 @@ document.getElementById('problem-selector').addEventListener('change', (e) => {
     loadProblem(currentProblem);
 });
 
-// Run Code Logic
-document.getElementById('run-btn').addEventListener('click', async () => {
-    const btn = document.getElementById('run-btn');
-    const output = document.getElementById('output-content');
-    const status = document.getElementById('status-indicator');
-    
-    if(editor) {
-        userCode[currentTab] = editor.getValue();
-    }
-
-    btn.disabled = true;
-    btn.innerHTML = 'Running...';
-    output.textContent = 'Compiling and simulating Code...';
-    status.textContent = 'Running';
-    status.style.color = 'var(--accent)';
-
-    // Format files for backend execution
-    const filesToExecute = [];
-    for (const [filename, content] of Object.entries(userCode)) {
-        filesToExecute.push({ name: filename, content: content });
-    }
-
-    try {
-        const response = await fetch('/api/execute', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                files: filesToExecute
-            })
-        });
-
-        const data = await response.json();
-        
-        if(response.ok) {
-            output.textContent = data.output;
-            status.textContent = 'Success';
-            status.style.color = 'var(--success)';
-        } else {
-            output.textContent = "Error: " + data.error;
-            status.textContent = 'Failed';
-            status.style.color = 'var(--error)';
-        }
-    } catch (error) {
-        output.textContent = "Network Error: Could not reach execution server.\nMake sure the backend is running.";
-        status.textContent = 'Error';
-        status.style.color = 'var(--error)';
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" class="play-icon"><path d="M8 5v14l11-7z" fill="currentColor"/></svg> Run Code';
-    }
-});
+// Run Code Logic Removed
 
 // Verification Logic
 document.getElementById('submit-btn').addEventListener('click', () => {

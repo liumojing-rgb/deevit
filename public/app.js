@@ -442,6 +442,31 @@ document.getElementById('run-btn').addEventListener('click', async () => {
         userCode[currentTab] = editor.getValue();
     }
 
+    // Check if any file contains UVM code (iverilog doesn't support UVM)
+    const uvmPatterns = /uvm_pkg|uvm_macros\.svh|uvm_sequence_item|uvm_sequence|uvm_driver|uvm_monitor|uvm_scoreboard|uvm_component|uvm_object|uvm_test|uvm_env|uvm_agent/;
+    let hasUVM = false;
+    let uvmFile = '';
+    for (const [filename, content] of Object.entries(userCode)) {
+        if (uvmPatterns.test(content)) {
+            hasUVM = true;
+            uvmFile = filename;
+            break;
+        }
+    }
+
+    if (hasUVM) {
+        output.textContent = 
+            `⚠ UVM code detected in "${uvmFile}"\n\n` +
+            `Icarus Verilog (iverilog) does not support UVM.\n` +
+            `UVM requires a commercial simulator (VCS, Questa, or Xcelium).\n\n` +
+            `▸ Use "Submit Answer" to verify your UVM code via pattern matching.\n` +
+            `▸ "Run Code" works for pure SystemVerilog (e.g. modules, testbenches without UVM).`;
+        output.className = 'failed';
+        status.textContent = 'UVM Not Supported';
+        status.className = 'status-indicator failed';
+        return;
+    }
+
     btn.disabled = true;
     btn.textContent = '⏳ Running...';
     output.textContent = 'Compiling with iverilog (-g2012)...';

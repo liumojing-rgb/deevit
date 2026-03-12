@@ -2,7 +2,9 @@
 const problems = {
     dff: {
         title: "D Flip-Flop Verification",
+        difficulty: "easy",
         description: `
+            <span class="difficulty-badge easy">Easy</span>
             <h3>Overview</h3>
             <p>Verify a simple D Flip-Flop design using UVM. The D Flip-Flop has a clock (<code>clk</code>), reset (<code>rst_n</code>), data input (<code>d</code>), and data output (<code>q</code>).</p>
             <h3>Requirements</h3>
@@ -59,7 +61,9 @@ endmodule`
     },
     fifo: {
         title: "Synchronous FIFO",
+        difficulty: "easy",
         description: `
+            <span class="difficulty-badge easy">Easy</span>
             <h3>Overview</h3>
             <p>Verify a Synchronous FIFO memory module using SystemVerilog UVM.</p>
             <h3>Requirements</h3>
@@ -87,7 +91,9 @@ endmodule`,
     },
     alu: {
         title: "Simple ALU",
+        difficulty: "easy",
         description: `
+            <span class="difficulty-badge easy">Easy</span>
             <h3>Overview</h3>
             <p>Verify an Arithmetic Logic Unit supporting ADD, SUB, AND, and OR operations.</p>
         `,
@@ -101,7 +107,9 @@ endmodule`,
     },
     apb_item: {
         title: "APB 1: Sequence Item (Constraints)",
+        difficulty: "medium",
         description: `
+            <span class="difficulty-badge medium">Medium</span>
             <h3>Overview</h3>
             <p>Define an APB Transaction item (<code>apb_item</code>) inheriting from <code>uvm_sequence_item</code>. Add appropriate properties and constraints for random generation.</p>
             <h3>Requirements</h3>
@@ -140,7 +148,9 @@ endclass`
     },
     apb_sequence: {
         title: "APB 2: Sequence (Stress Testing)",
+        difficulty: "medium",
         description: `
+            <span class="difficulty-badge medium">Medium</span>
             <h3>Overview</h3>
             <p>Create a UVM Sequence that generates consecutive write/read back-to-back traffic to stress-test the APB protocol.</p>
             <h3>Requirements</h3>
@@ -177,7 +187,9 @@ endclass`
     },
     apb_driver: {
         title: "APB 3: Driver (Bus Protocol)",
+        difficulty: "medium",
         description: `
+            <span class="difficulty-badge medium">Medium</span>
             <h3>Overview</h3>
             <p>Implement the APB Driver's <code>run_phase</code> to toggle the standard APB protocol signals based on the received transaction.</p>
             <h3>Requirements</h3>
@@ -228,7 +240,9 @@ endclass`
     },
     apb_scoreboard: {
         title: "APB 4: Scoreboard (Analysis Ports)",
+        difficulty: "medium",
         description: `
+            <span class="difficulty-badge medium">Medium</span>
             <h3>Overview</h3>
             <p>Implement the <code>write</code> method of a UVM Scoreboard connected to a Monitor via an analysis port. Use it to verify data correctness.</p>
             <h3>Requirements</h3>
@@ -273,7 +287,6 @@ endclass`
     }
 };
 
-// Application State
 // Application State
 let editor;
 let currentTab = 'design.sv';
@@ -419,7 +432,33 @@ document.getElementById('problem-selector').addEventListener('change', (e) => {
     loadProblem(currentProblem);
 });
 
-// Run Code Logic Removed
+// Reset Button Logic
+document.getElementById('reset-btn').addEventListener('click', () => {
+    if (confirm('Reset code to original boilerplate? Your changes will be lost.')) {
+        loadProblem(currentProblem);
+        const output = document.getElementById('output-content');
+        const status = document.getElementById('status-indicator');
+        output.textContent = 'Code reset to boilerplate.';
+        output.className = '';
+        status.textContent = 'Ready';
+        status.className = 'status-indicator ready';
+    }
+});
+
+// Show toast notification
+function showToast(message, type) {
+    const existing = document.querySelector('.success-toast');
+    if (existing) existing.remove();
+    
+    const toast = document.createElement('div');
+    toast.className = 'success-toast';
+    toast.textContent = (type === 'success' ? '🎉 ' : '❌ ') + message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentNode) toast.remove();
+    }, 3000);
+}
 
 // Verification Logic
 document.getElementById('submit-btn').addEventListener('click', () => {
@@ -430,20 +469,26 @@ document.getElementById('submit-btn').addEventListener('click', () => {
     const output = document.getElementById('output-content');
     const status = document.getElementById('status-indicator');
     
-    status.textContent = 'Verifying...';
-    status.style.color = 'var(--accent)';
+    status.textContent = 'Verifying';
+    status.className = 'status-indicator verifying';
     
-    const result = verifyAnswer(currentProblem, userCode);
-    
-    if (result.success) {
-        output.textContent = "SUCCESS: " + result.message + "\n\nAll requirements met!";
-        status.textContent = 'Passed';
-        status.style.color = 'var(--success)';
-    } else {
-        output.textContent = "VERIFICATION FAILED:\n\n" + result.message + "\n\nExpected Output Summary:\n" + result.expected;
-        status.textContent = 'Failed';
-        status.style.color = 'var(--error)';
-    }
+    // Small delay for visual feedback
+    setTimeout(() => {
+        const result = verifyAnswer(currentProblem, userCode);
+        
+        if (result.success) {
+            output.textContent = "SUCCESS: " + result.message + "\n\n✓ All requirements met!";
+            output.className = 'success';
+            status.textContent = 'Passed';
+            status.className = 'status-indicator passed';
+            showToast('All requirements met!', 'success');
+        } else {
+            output.textContent = "VERIFICATION FAILED\n\n" + result.message + "\n\nExpected:\n" + result.expected;
+            output.className = 'failed';
+            status.textContent = 'Failed';
+            status.className = 'status-indicator failed';
+        }
+    }, 300);
 });
 
 function verifyAnswer(problemId, codeObj) {

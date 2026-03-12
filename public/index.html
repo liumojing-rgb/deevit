@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SV/UVM LeetCode Clone</title>
+    <title>SVLeet — SystemVerilog & UVM Practice</title>
+    <meta name="description" content="Practice SystemVerilog and UVM coding problems with instant verification. Like LeetCode for hardware verification engineers.">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <!-- Split.js for resizable panes -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.5/split.min.js"></script>
 </head>
@@ -15,8 +16,12 @@
             <span class="logo-text">SV<span class="highlight">Leet</span></span>
         </div>
         <div class="nav-controls">
+            <button id="reset-btn" class="reset-button" title="Reset code to original boilerplate">
+                <svg viewBox="0 0 24 24" fill="none" class="btn-icon" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                Reset
+            </button>
             <button id="submit-btn" class="submit-button">
-                <svg viewBox="0 0 24 24" fill="none" class="play-icon" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <svg viewBox="0 0 24 24" fill="none" class="btn-icon" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 Submit Answer
             </button>
         </div>
@@ -58,10 +63,10 @@
             <div id="console-pane" class="pane console-pane">
                 <div class="pane-header">
                     <h3>Terminal</h3>
-                    <div id="status-indicator" class="status-indicator">Ready</div>
+                    <div id="status-indicator" class="status-indicator ready">Ready</div>
                 </div>
                 <div class="pane-content terminal-output">
-                    <pre id="output-content">Waiting for simulation...</pre>
+                    <pre id="output-content">Click "Submit Answer" to verify your solution...</pre>
                 </div>
             </div>
 

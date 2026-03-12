@@ -432,6 +432,60 @@ document.getElementById('problem-selector').addEventListener('change', (e) => {
     loadProblem(currentProblem);
 });
 
+// Run Code Logic — invokes iverilog via backend
+document.getElementById('run-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('run-btn');
+    const output = document.getElementById('output-content');
+    const status = document.getElementById('status-indicator');
+    
+    if(editor) {
+        userCode[currentTab] = editor.getValue();
+    }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Running...';
+    output.textContent = 'Compiling with iverilog (-g2012)...';
+    output.className = '';
+    status.textContent = 'Compiling';
+    status.className = 'status-indicator verifying';
+
+    // Bundle all files for the backend
+    const filesToExecute = [];
+    for (const [filename, content] of Object.entries(userCode)) {
+        filesToExecute.push({ name: filename, content: content });
+    }
+
+    try {
+        const response = await fetch('/api/execute', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ files: filesToExecute })
+        });
+
+        const data = await response.json();
+        
+        if(response.ok) {
+            output.textContent = data.output;
+            output.className = 'success';
+            status.textContent = 'Success';
+            status.className = 'status-indicator passed';
+        } else {
+            output.textContent = data.output || data.error || 'Unknown error';
+            output.className = 'failed';
+            status.textContent = 'Compile Error';
+            status.className = 'status-indicator failed';
+        }
+    } catch (error) {
+        output.textContent = "Network Error: Could not reach execution server.\nMake sure the backend is running.";
+        output.className = 'failed';
+        status.textContent = 'Error';
+        status.className = 'status-indicator failed';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" class="btn-icon"><path d="M8 5v14l11-7z" fill="currentColor"/></svg> Run Code';
+    }
+});
+
 // Reset Button Logic
 document.getElementById('reset-btn').addEventListener('click', () => {
     if (confirm('Reset code to original boilerplate? Your changes will be lost.')) {

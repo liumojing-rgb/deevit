@@ -1,0 +1,19 @@
+::ffff:127.0.0.1 - - [11/Mar/2026 21:11:21] "GET / HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [11/Mar/2026 21:11:21] "GET /style.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [11/Mar/2026 21:11:21] "GET /app.js HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [11/Mar/2026 21:11:21] code 404, message File not found
+::ffff:127.0.0.1 - - [11/Mar/2026 21:11:21] "GET /favicon.ico HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [11/Mar/2026 21:20:38] code 404, message File not found
+::ffff:127.0.0.1 - - [11/Mar/2026 21:20:38] "GET / HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [11/Mar/2026 21:20:38] code 404, message File not found
+::ffff:127.0.0.1 - - [11/Mar/2026 21:20:38] "GET / HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [11/Mar/2026 21:20:39] code 404, message File not found
+::ffff:127.0.0.1 - - [11/Mar/2026 21:20:39] "GET / HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [11/Mar/2026 21:20:39] code 404, message File not found
+::ffff:127.0.0.1 - - [11/Mar/2026 21:20:39] "GET / HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [11/Mar/2026 21:20:39] code 404, message File not found
+::ffff:127.0.0.1 - - [11/Mar/2026 21:20:39] "GET / HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [11/Mar/2026 21:20:40] code 404, message File not found
+::ffff:127.0.0.1 - - [11/Mar/2026 21:20:40] "GET / HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [11/Mar/2026 21:20:40] code 404, message File not found
+::ffff:127.0.0.1 - - [11/Mar/2026 21:20:40] "GET / HTTP/1.1" 404 -

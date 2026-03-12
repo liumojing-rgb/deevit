@@ -1,0 +1,240 @@
+:root {
+    --bg-main: #0d1117;
+    --bg-pane: #161b22;
+    --bg-header: #010409;
+    --border-color: #30363d;
+    --text-main: #c9d1d9;
+    --text-muted: #8b949e;
+    --accent: #2f81f7;
+    --accent-hover: #1f6feb;
+    --error: #f85149;
+    --success: #2ea043;
+    --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-mono: 'Fira Code', ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: var(--font-ui);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+    height: 50px;
+    background-color: var(--bg-header);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.logo-text {
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+
+.highlight {
+    color: var(--accent);
+}
+
+.run-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--success);
+    color: white;
+    border: none;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.run-button:hover {
+    background-color: #2c974b;
+}
+
+.run-button:active {
+    transform: scale(0.98);
+}
+
+.play-icon {
+    width: 14px;
+    height: 14px;
+}
+
+/* Workspace */
+.workspace {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 50px);
+}
+
+.pane {
+    background-color: var(--bg-pane);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Split.js Gutters */
+.gutter {
+    background-color: var(--bg-main);
+    background-repeat: no-repeat;
+    background-position: 50%;
+    cursor: col-resize;
+    position: relative;
+    z-index: 10;
+}
+
+.gutter.gutter-horizontal {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjbd5CGEFsQASeML0T8eL/AAAAABJRU5ErkJggg==');
+}
+
+.gutter.gutter-vertical {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFAQMAAABo7865AAAABlBMVEVHcEzMzMzyCB2iAAAAAXRSTlMAQObYZgAAABBJREFUeF5jOAMEEAIEEFBgAAWgAQK46x3bAAAAAElFTkSuQmCC');
+    cursor: row-resize;
+}
+
+/* Pane Headers */
+.pane-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: var(--bg-pane);
+    border-bottom: 1px solid var(--border-color);
+    border-top: 1px solid var(--bg-main);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.pane-content {
+    flex: 1;
+    overflow: auto;
+    padding: 1rem;
+}
+
+/* Tabs */
+.editor-header {
+    padding: 0;
+    background-color: var(--bg-main);
+}
+
+.tabs {
+    display: flex;
+    gap: 2px;
+}
+
+.tab {
+    background-color: var(--bg-pane);
+    color: var(--text-muted);
+    border: none;
+    border-top: 2px solid transparent;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-family: var(--font-ui);
+    cursor: pointer;
+}
+
+.tab.active {
+    color: var(--text-main);
+    background-color: var(--bg-pane);
+    border-top: 2px solid var(--accent);
+}
+
+.problem-selector {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 0.3rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+/* Markdown Styles for Problem Description */
+.markdown-body {
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+.markdown-body p {
+    margin-bottom: 1rem;
+}
+
+.markdown-body pre {
+    background-color: #0d1117;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+/* Editor */
+.editor-container {
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Terminal */
+.console-pane .pane-content {
+    padding: 0;
+    background-color: #010409;
+}
+
+.terminal-output pre {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: #a5d6ff;
+    padding: 0.5rem 1rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 0;
+}
+
+.status-indicator {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #484f58;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6e7681;
+}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SV/UVM LeetCode Clone</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Split.js for resizable panes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.5/split.min.js"></script>
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <span class="logo-text">SV<span class="highlight">Leet</span></span>
+        </div>
+        <div class="nav-controls">
+            <button id="run-btn" class="run-button">
+                <svg viewBox="0 0 24 24" fill="none" class="play-icon"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+                Run Code
+            </button>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <!-- Problem Description Pane -->
+        <div id="problem-pane" class="pane problem-pane">
+            <div class="pane-header">
+                <h2>Problem Description</h2>
+                <select id="problem-selector" class="problem-selector">
+                    <option value="dff">D Flip-Flop Verification</option>
+                    <option value="fifo">Synchronous FIFO</option>
+                    <option value="alu">Simple ALU</option>
+                    <option value="apb">APB Memory - Full UVM Architecture</option>
+                </select>
+            </div>
+            <div id="problem-content" class="pane-content markdown-body">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+
+        <!-- Editor and Console Pane -->
+        <div id="editor-console-pane" class="pane split-vertical">
+            
+            <div id="editor-pane" class="pane editor-pane">
+                <div class="pane-header editor-header">
+                    <div class="tabs">
+                        <!-- Tabs dynamically injected via JS -->
+                    </div>
+                </div>
+                <!-- Monaco Editor container -->
+                <div id="editor-container" class="editor-container"></div>
+            </div>
+
+            <div id="console-pane" class="pane console-pane">
+                <div class="pane-header">
+                    <h3>Terminal</h3>
+                    <div id="status-indicator" class="status-indicator">Ready</div>
+                </div>
+                <div class="pane-content terminal-output">
+                    <pre id="output-content">Waiting for simulation...</pre>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Configure Monaco Editor -->
+    <script>
+        var require = { paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.41.0/min/vs' } };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.41.0/min/vs/loader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.41.0/min/vs/editor/editor.main.nls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.41.0/min/vs/editor/editor.main.js"></script>
+    
+    <script src="app.js"></script>
+</body>
+</html>

@@ -98,85 +98,67 @@ endmodule`,
 );
     // implementation
 endmodule`,
-        testbench: {
-        	"testbench.sv": `// Write your ALU testbench`
-        }
     },
-    apb: {
-        title: "APB Memory - Full UVM Architecture",
+    apb_item: {
+        title: "APB 1: Sequence Item (Constraints)",
         description: `
             <h3>Overview</h3>
-            <p>Implement a full UVM testbench architecture to verify an APB Memory module. The environment requires all standard UVM 1.2 base-classes.</p>
+            <p>Define an APB Transaction item (<code>apb_item</code>) inheriting from <code>uvm_sequence_item</code>. Add appropriate properties and constraints for random generation.</p>
             <h3>Requirements</h3>
-            <ul>
-                <li><strong>uvm_sequence_item</strong>: Define APB transaction (addr, data, write/read, etc).</li>
-                <li><strong>uvm_sequence & uvm_sequencer</strong>: Generate read/write traffic.</li>
-                <li><strong>uvm_driver & uvm_monitor</strong>: Interface with the APB bus signals.</li>
-                <li><strong>uvm_agent & uvm_env</strong>: Encapsulate the active/passive components.</li>
-                <li><strong>uvm_scoreboard</strong>: Verify memory contents against a predictor array.</li>
-                <li><strong>uvm_test</strong>: Top-level test class to configure and run the sequence.</li>
-            </ul>
+            <ol>
+                <li>Define 32-bit <code>addr</code>, 32-bit <code>data</code>, and 1-bit <code>write</code> variables. Make them randomizable.</li>
+                <li>Add UVM Field macros for all variables to enable printing/comparing.</li>
+                <li>Add a Constraint: <code>addr</code> must be word-aligned (divisible by 4) and less than <code>32'h1000</code>.</li>
+                <li>Add a Constraint: <code>write</code> should be 1 (Write) 70% of the time, and 0 (Read) 30% of the time.</li>
+            </ol>
         `,
-        design: `module apb_memory #(
-    parameter ADDR_WIDTH = 8,
-    parameter DATA_WIDTH = 32
-) (
-    input clk,
-    input rst_n,
-    input psel,
-    input penable,
-    input pwrite,
-    input [ADDR_WIDTH-1:0] paddr,
-    input [DATA_WIDTH-1:0] pwdata,
-    output logic [DATA_WIDTH-1:0] prdata,
-    output logic pready
-);
-    logic [DATA_WIDTH-1:0] mem [0:(1<<ADDR_WIDTH)-1];
-
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            prdata <= '0;
-            pready <= 1'b0;
-        end else begin
-            if (psel && !penable) begin
-                pready <= 1'b0;
-            end else if (psel && penable) begin
-                pready <= 1'b1;
-                if (pwrite) 
-                    mem[paddr] <= pwdata;
-                else
-                    prdata <= mem[paddr];
-            end else begin
-                pready <= 1'b0;
-            end
-        end
-    end
+        design: `// Design is pre-compiled in the background for this exercise.
+// Focus on the apb_item.sv tab to complete the uvm_sequence_item.
+module dummy_design;
 endmodule`,
         testbench: {
         	"apb_item.sv": `import uvm_pkg::*;
 \`include "uvm_macros.svh"
 
-// 1. Transaction Item
 class apb_item extends uvm_sequence_item;
-    rand bit [31:0] addr;
-    rand bit [31:0] data;
-    rand bit        write;
+    // 1. Declare properties here: addr, data, write
     
     \`uvm_object_utils_begin(apb_item)
-        \`uvm_field_int(addr, UVM_ALL_ON)
-        \`uvm_field_int(data, UVM_ALL_ON)
-        \`uvm_field_int(write, UVM_ALL_ON)
+        // 2. Add UVM Field macros here
     \`uvm_object_utils_end
 
     function new(string name = "apb_item");
         super.new(name);
     endfunction
-endclass`,
-
-			"apb_sequence.sv": `import uvm_pkg::*;
+    
+    // 3. Add addr constraint here
+    
+    // 4. Add write probability constraint here
+    
+endclass`
+        }
+    },
+    apb_sequence: {
+        title: "APB 2: Sequence (Stress Testing)",
+        description: `
+            <h3>Overview</h3>
+            <p>Create a UVM Sequence that generates consecutive write/read back-to-back traffic to stress-test the APB protocol.</p>
+            <h3>Requirements</h3>
+            <ol>
+                <li>Define a sequence inheriting from <code>uvm_sequence#(apb_item)</code>.</li>
+                <li>Write a <code>body()</code> task that loops 10 times.</li>
+                <li>In each loop iteration, create an item. Randomize it but constrain it to be a WRITE to a specific address, and send it.</li>
+                <li>Immediately create a second item. Constrain it to be a READ to that exact same address, and send it.</li>
+            </ol>
+        `,
+        design: `// Design is pre-compiled in the background for this exercise.
+// Focus on the apb_sequence.sv tab to complete the uvm_sequence.
+module dummy_design;
+endmodule`,
+        testbench: {
+        	"apb_sequence.sv": `import uvm_pkg::*;
 \`include "uvm_macros.svh"
 
-// 2. Sequence
 class apb_sequence extends uvm_sequence#(apb_item);
     \`uvm_object_utils(apb_sequence)
     
@@ -185,113 +167,108 @@ class apb_sequence extends uvm_sequence#(apb_item);
     endfunction
 
     task body();
-        // create and randomize items here
+        apb_item req_wr, req_rd;
+        
+        // Write your loop here
+        
     endtask
-endclass`,
-
-			"apb_driver.sv": `import uvm_pkg::*;
+endclass`
+        }
+    },
+    apb_driver: {
+        title: "APB 3: Driver (Bus Protocol)",
+        description: `
+            <h3>Overview</h3>
+            <p>Implement the APB Driver's <code>run_phase</code> to toggle the standard APB protocol signals based on the received transaction.</p>
+            <h3>Requirements</h3>
+            <ol>
+                <li>Wait for <code>seq_item_port.get_next_item(req)</code>.</li>
+                <li><strong>Setup Phase</strong>: On the positive clock edge, drive <code>paddr</code>, <code>pwdata</code>, <code>pwrite</code>, and assert <code>psel</code>. <code>penable</code> must be 0.</li>
+                <li><strong>Access Phase</strong>: On the next positive clock edge, assert <code>penable</code>.</li>
+                <li>Wait for the slave to assert <code>pready</code> (simulated as immediately ready for this exercise).</li>
+                <li>Deassert <code>psel</code> and <code>penable</code>, then call <code>seq_item_port.item_done()</code>.</li>
+            </ol>
+        `,
+        design: `// Design is pre-compiled in the background for this exercise.
+// Focus on the apb_driver.sv tab to complete the uvm_driver.
+module dummy_design;
+endmodule`,
+        testbench: {
+        	"apb_driver.sv": `import uvm_pkg::*;
 \`include "uvm_macros.svh"
 
-// 3. Driver
 class apb_driver extends uvm_driver#(apb_item);
     \`uvm_component_utils(apb_driver)
     
-    function new(string name, uvm_component parent);
-        super.new(name, parent);
-    endfunction
-    // Add run_phase
-endclass`,
-
-			"apb_monitor.sv": `import uvm_pkg::*;
-\`include "uvm_macros.svh"
-
-// 4. Monitor
-class apb_monitor extends uvm_monitor;
-    \`uvm_component_utils(apb_monitor)
+    virtual apb_if vif;
     
     function new(string name, uvm_component parent);
         super.new(name, parent);
-    endfunction
-    // Add run_phase and analysis port
-endclass`,
-
-			"apb_agent.sv": `import uvm_pkg::*;
-\`include "uvm_macros.svh"
-
-// 5. Agent
-class apb_agent extends uvm_agent;
-    \`uvm_component_utils(apb_agent)
-    apb_driver    drv;
-    apb_monitor   mon;
-    uvm_sequencer#(apb_item) sqr;
-    
-    function new(string name, uvm_component parent);
-        super.new(name, parent);
-    endfunction
-endclass`,
-
-			"apb_scoreboard.sv": `import uvm_pkg::*;
-\`include "uvm_macros.svh"
-
-// 6. Scoreboard
-class apb_scoreboard extends uvm_scoreboard;
-    \`uvm_component_utils(apb_scoreboard)
-    
-    function new(string name, uvm_component parent);
-        super.new(name, parent);
-    endfunction
-endclass`,
-
-			"apb_env.sv": `import uvm_pkg::*;
-\`include "uvm_macros.svh"
-
-// 7. Environment
-class apb_env extends uvm_env;
-    \`uvm_component_utils(apb_env)
-    apb_agent      agt;
-    apb_scoreboard scb;
-    
-    function new(string name, uvm_component parent);
-        super.new(name, parent);
-    endfunction
-endclass`,
-
-			"apb_test.sv": `import uvm_pkg::*;
-\`include "uvm_macros.svh"
-
-// 8. Test
-class apb_test extends uvm_test;
-    \`uvm_component_utils(apb_test)
-    apb_env env;
-    
-    function new(string name = "apb_test", uvm_component parent = null);
-        super.new(name, parent);
-    endfunction
-    
-    function void build_phase(uvm_phase phase);
-        super.build_phase(phase);
-        env = apb_env::type_id::create("env", this);
     endfunction
     
     task run_phase(uvm_phase phase);
-        apb_sequence seq;
-        phase.raise_objection(this);
-        \`uvm_info("TEST", "Starting APB Test UVM 1.2...", UVM_LOW)
-        seq = apb_sequence::type_id::create("seq");
-        seq.start(env.agt.sqr);
-        #100;
-        phase.drop_objection(this);
+        // Initialize signals to 0
+        vif.psel <= 0;
+        vif.penable <= 0;
+        
+        forever begin
+            seq_item_port.get_next_item(req);
+            
+            // 1. Setup Phase
+            
+            // 2. Access Phase
+            
+            // 3. Complete Transaction
+            
+            seq_item_port.item_done();
+        end
     endtask
-endclass`,
-
-			"top.sv": `import uvm_pkg::*;
+endclass`
+        }
+    },
+    apb_scoreboard: {
+        title: "APB 4: Scoreboard (Analysis Ports)",
+        description: `
+            <h3>Overview</h3>
+            <p>Implement the <code>write</code> method of a UVM Scoreboard connected to a Monitor via an analysis port. Use it to verify data correctness.</p>
+            <h3>Requirements</h3>
+            <ol>
+                <li>Define the <code>write</code> function required by <code>uvm_analysis_imp</code>.</li>
+                <li>Maintain a Golden Memory array (e.g., <code>bit [31:0] mem [int]</code>).</li>
+                <li>If the incoming transaction is a WRITE, update the golden memory array with the data at the address.</li>
+                <li>If it's a READ, compare the incoming data against the golden memory array. Print a <code>UVM_INFO</code> MATCH message if correct, or a <code>UVM_ERROR</code> if there's a mismatch.</li>
+            </ol>
+        `,
+        design: `// Design is pre-compiled in the background for this exercise.
+// Focus on the apb_scoreboard.sv tab to complete the uvm_scoreboard.
+module dummy_design;
+endmodule`,
+        testbench: {
+        	"apb_scoreboard.sv": `import uvm_pkg::*;
 \`include "uvm_macros.svh"
 
-module top;
-    initial begin
-        run_test("apb_test");
-    end
-endmodule`
+\`uvm_analysis_imp_decl(_mon)
+
+class apb_scoreboard extends uvm_scoreboard;
+    \`uvm_component_utils(apb_scoreboard)
+    
+    uvm_analysis_imp_mon#(apb_item, apb_scoreboard) item_collected_export;
+    
+    // Golden memory predictor array
+    bit [31:0] mem [int];
+    
+    function new(string name, uvm_component parent);
+        super.new(name, parent);
+        item_collected_export = new("item_collected_export", this);
+    endfunction
+    
+    // Implement the write_mon function
+    virtual function void write_mon(apb_item req);
+        
+        // Write your scoreboard logic here
+        
+    endfunction
+endclass`
         }
     }
 };

@@ -22,6 +22,54 @@ def execute_code():
     # Mocking the execution delay (simulating Docker container spin-up and simulation run)
     time.sleep(1.5)
     
+    # 1. Basic SV Syntax Parsing Logic
+    syntax_errors = []
+    
+    for file in files:
+        filename = file.get('name', 'unknown.sv')
+        content = file.get('content', '')
+        
+        # Check matched blocks
+        if content.count('begin') != content.count('end'):
+            syntax_errors.append(f"** Error: {filename}: Unmatched 'begin'/'end' block.\n")
+        if content.count('class') - content.count('endclass') != 0 and 'virtual class' not in content:
+            # Simple heuristic, 'class' is used in endclass, so endclass is counted twice if just searching 'class'.
+            # Better counting logic:
+            num_class = len([w for w in content.split() if w == 'class'])
+            num_endclass = len([w for w in content.split() if w == 'endclass'])
+            if num_class != num_endclass:
+                syntax_errors.append(f"** Error: {filename}: Unmatched 'class'/'endclass' declaration.\n")
+        if content.count('module') - content.count('endmodule') != 0:
+            num_module = len([w for w in content.split() if w == 'module'])
+            num_endmodule = len([w for w in content.split() if w == 'endmodule'])
+            if num_module != num_endmodule:
+                 syntax_errors.append(f"** Error: {filename}: Unmatched 'module'/'endmodule' declaration.\n")
+                 
+        # Look for missing semicolons on common statements
+        lines = content.split('\n')
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            # If the line declares a logic or wire and doesn't end in a semicolon
+            if (stripped.startswith('logic') or stripped.startswith('wire') or stripped.startswith('bit') or stripped.startswith('int') or stripped.startswith('string')) and not stripped.endswith(';'):
+                 if not stripped.endswith(','): # Ignore multi-line parameter definitions
+                     syntax_errors.append(f"** Error: {filename}({i+1}): Missing ';' (semicolon) at the end of declaration.\n")
+    
+    if syntax_errors:
+        error_log = f"""
+[Compiler] Info: Invoking SystemVerilog Simulator
+[Compiler] Option: -ntb_opts uvm-1.2 enabled
+[Compiler] Parsing files...
+
+{"".join(syntax_errors)}
+[Compiler] Error: Compilation failed due to syntax errors. Simulation aborted.
+"""
+        return jsonify({
+            "status": "error",
+            "error": "Compilation failed.",
+            "output": error_log.strip()
+        }), 400
+
+    # 2. Proceed to Success execution Simulation if syntax is correct
     # Generate the compiler log text dynamically based on the sent files
     compiler_logs = ""
     for file in files:

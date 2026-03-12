@@ -50,6 +50,30 @@ body {
     color: var(--accent);
 }
 
+.submit-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #6366f1; /* Indigo */
+    color: white;
+    border: none;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+    margin-right: 0.5rem;
+}
+
+.submit-button:hover {
+    background-color: #4f46e5;
+}
+
+.submit-button:active {
+    transform: scale(0.98);
+}
+
 .run-button {
     display: flex;
     align-items: center;

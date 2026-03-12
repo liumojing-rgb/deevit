@@ -472,3 +472,112 @@ document.getElementById('run-btn').addEventListener('click', async () => {
         btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" class="play-icon"><path d="M8 5v14l11-7z" fill="currentColor"/></svg> Run Code';
     }
 });
+
+// Verification Logic
+document.getElementById('submit-btn').addEventListener('click', () => {
+    if(editor) {
+        userCode[currentTab] = editor.getValue();
+    }
+    
+    const output = document.getElementById('output-content');
+    const status = document.getElementById('status-indicator');
+    
+    status.textContent = 'Verifying...';
+    status.style.color = 'var(--accent)';
+    
+    const result = verifyAnswer(currentProblem, userCode);
+    
+    if (result.success) {
+        output.textContent = "SUCCESS: " + result.message + "\n\nAll requirements met!";
+        status.textContent = 'Passed';
+        status.style.color = 'var(--success)';
+    } else {
+        output.textContent = "VERIFICATION FAILED:\n\n" + result.message + "\n\nExpected Output Summary:\n" + result.expected;
+        status.textContent = 'Failed';
+        status.style.color = 'var(--error)';
+    }
+});
+
+function verifyAnswer(problemId, codeObj) {
+    if (problemId === 'apb_item') {
+        const code = codeObj['apb_item.sv'] || "";
+        if (!/rand\s+bit\s+\[31:0\]\s+addr/.test(code) || !/rand\s+bit\s+\[31:0\]\s+data/.test(code) || !/rand\s+bit\s+write/.test(code)) {
+            return { success: false, message: "Missing required 'rand' property declarations (addr, data, write).", expected: "rand bit [31:0] addr;\nrand bit [31:0] data;\nrand bit write;" };
+        }
+        if (!/`uvm_field_int\(\s*addr/.test(code) || !/`uvm_field_int\(\s*data/.test(code) || !/`uvm_field_int\(\s*write/.test(code)) {
+            return { success: false, message: "Missing UVM field macros for one or more properties.", expected: "`uvm_field_int(addr, UVM_ALL_ON)" };
+        }
+        if (!/addr\s*%\s*4\s*==\s*0/.test(code) || !/addr\s*<\s*(32'h1000|'h1000|4096)/.test(code)) {
+            return { success: false, message: "Missing or incorrect address constraints (word-aligned and < 1000).", expected: "constraint addr_c { addr % 4 == 0; addr < 32'h1000; }" };
+        }
+        if (!/dist\s*{\s*1\s*:=\s*70\s*,\s*0\s*:=\s*30\s*}/.test(code) && !/dist\s*{\s*1\s*\/\s*70\s*,\s*0\s*\/\s*30\s*}/.test(code)) {
+            return { success: false, message: "Missing or incorrect write probability constraint using 'dist'.", expected: "constraint write_c { write dist { 1 := 70, 0 := 30 }; }" };
+        }
+        return { success: true, message: "apb_item correctly defined with properties, macros, and constraints." };
+    } 
+    else if (problemId === 'apb_sequence') {
+        const code = codeObj['apb_sequence.sv'] || "";
+        if (!/task\s+body\(.*?\)/.test(code)) {
+            return { success: false, message: "Missing the body() task.", expected: "task body();" };
+        }
+        if (!/repeat\s*\(\s*10\s*\)|for\s*\(/.test(code)) {
+            return { success: false, message: "Missing the loop (repeat 10 or for loop) to execute 10 times.", expected: "repeat(10) begin ... end" };
+        }
+        if (!/`uvm_do_with\s*\(\s*req_wr/s.test(code) && !/start_item\(req_wr\)/.test(code)) {
+             return { success: false, message: "Missing item creation and start_item/uvm_do for the WRITE transaction.", expected: "start_item(req_wr);" };
+        }
+        if (!/write\s*==\s*1/.test(code)) {
+             return { success: false, message: "Missing 'write == 1' constraint for the Write transaction.", expected: "req_wr.randomize() with { write == 1; };" };
+        }
+        if (!/write\s*==\s*0/.test(code)) {
+             return { success: false, message: "Missing 'write == 0' constraint for the Read transaction.", expected: "req_rd.randomize() with { write == 0; addr == req_wr.addr; };" };
+        }
+        if (!/addr\s*==\s*req_wr\.addr/.test(code)) {
+             return { success: false, message: "Missing constraint ensuring the Read transaction address matches the Write transaction address.", expected: "addr == req_wr.addr;" };
+        }
+        return { success: true, message: "apb_sequence correctly implements the 10x back-to-back write/read stress test." };
+    }
+    else if (problemId === 'apb_driver') {
+        const code = codeObj['apb_driver.sv'] || "";
+        if (!/seq_item_port\.get_next_item/.test(code)) {
+            return { success: false, message: "Missing seq_item_port.get_next_item.", expected: "seq_item_port.get_next_item(req);" };
+        }
+        if (!/vif\.psel\s*<=\s*1|vif\.psel\s*=\s*1/.test(code)) {
+            return { success: false, message: "Missing assertion of psel during the Setup Phase.", expected: "vif.psel <= 1;" };
+        }
+        if (!/(?:@\s*\(\s*posedge.*?\)|#).*(?:vif\.penable\s*<=\s*1|vif\.penable\s*=\s*1)/s.test(code)) {
+            return { success: false, message: "Missing assertion of penable on the NEXT clock edge (Access Phase).", expected: "@(posedge vif.clk);\nvif.penable <= 1;" };
+        }
+        if (!/wait\s*\(\s*vif\.pready\s*|\s*vif\.pready\s*==/.test(code)) {
+            return { success: false, message: "Missing wait condition for pready.", expected: "wait (vif.pready == 1);" };
+        }
+        if (!/vif\.psel\s*<=\s*0|vif\.psel\s*=\s*0/.test(code) || !/vif\.penable\s*<=\s*0|vif\.penable\s*=\s*0/.test(code)) {
+            return { success: false, message: "Missing deassertion of psel and penable after the transaction.", expected: "vif.psel <= 0;\nvif.penable <= 0;" };
+        }
+        if (!/seq_item_port\.item_done/.test(code)) {
+            return { success: false, message: "Missing seq_item_port.item_done.", expected: "seq_item_port.item_done();" };
+        }
+        return { success: true, message: "apb_driver correctly implements the APB Setup and Access protocol phases." };
+    }
+    else if (problemId === 'apb_scoreboard') {
+        const code = codeObj['apb_scoreboard.sv'] || "";
+        if (!/virtual\s+function\s+void\s+write_mon\(apb_item\s+req\)/.test(code) && !/function\s+void\s+write_mon\(apb_item\s+req\)/.test(code)) {
+            return { success: false, message: "Missing or incorrect write_mon function signature.", expected: "virtual function void write_mon(apb_item req);" };
+        }
+        if (!/if\s*\(\s*req\.write\s*(?:==\s*1|)\s*\)/.test(code) && !/req\.write/.test(code)) {
+            return { success: false, message: "Missing check for whether the transaction is a Write or a Read (e.g., if(req.write)).", expected: "if (req.write) { ... } else { ... }" };
+        }
+        if (!/mem\s*\[\s*req\.addr\s*\]\s*=\s*req\.data/.test(code)) {
+            return { success: false, message: "Missing logic to update the golden memory array during a Write transaction.", expected: "mem[req.addr] = req.data;" };
+        }
+        if (!/mem\s*\[\s*req\.addr\s*\]\s*(?:==|!==|!=)\s*req\.data/.test(code) && !/req\.data\s*(?:==|!==|!=)\s*mem\s*\[\s*req\.addr\s*\]/.test(code)) {
+            return { success: false, message: "Missing logic comparing the read req.data against the golden memory array.", expected: "if (req.data == mem[req.addr])" };
+        }
+        if (!/`uvm_info/.test(code) || !/`uvm_error/.test(code)) {
+            return { success: false, message: "Missing `uvm_info (for Match) or `uvm_error (for Mismatch) reporting macros.", expected: "`uvm_info(\"SCB\", \"MATCH\", UVM_LOW)\n`uvm_error(\"SCB\", \"MISMATCH\")" };
+        }
+        return { success: true, message: "apb_scoreboard correctly implements golden predictor updates and comparison logic." };
+    }
+    
+    return { success: false, message: "Verification not yet supported for this problem type.", expected: "N/A" };
+}
